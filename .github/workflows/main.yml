@@ -1,0 +1,26 @@
+name: Ask2God CI
+
+on:
+  pull_request:
+    branches: [ master ]
+  
+  workflow_dispatch:
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  component-test:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+      submodules: recursive
+    - name: build docker image
+      run: docker build -t covenant .
+    - name: run covenant server
+      run: docker run -it -p 7443:7443 -p 80:80 -p 443:443 --name covenant -v ./Data:/app/Data covenant
+    - name: component test
+      run: |
+        npm install
+        npm install -g webdriverio
+        npm test
